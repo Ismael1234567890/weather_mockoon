@@ -1,5 +1,7 @@
+import '/app/weather/components/empty_view.dart';
+import '/app/weather/components/error_view.dart';
+import '/app/weather/components/loading_view.dart';
 import '/app/weather/components/weather_item_widget.dart';
-
 import '/app/weather/controllers/weather_controller.dart';
 import '/constants/app_export.dart';
 
@@ -34,11 +36,11 @@ class WeatherScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.weatherTimelines.isEmpty) {
-          return const _LoadingWidget();
+          return const LoadingWidget();
         }
 
         if (controller.hasError.value && controller.weatherTimelines.isEmpty) {
-          return _ErrorWidget(
+          return MyErrorWidget(
             message: controller.errorMessage.value,
             onRetry: controller.getWeatherList,
           );
@@ -55,13 +57,14 @@ class WeatherScreen extends StatelessWidget {
               // Liste des données météo
               Expanded(
                 child: controller.weatherTimelines.isEmpty
-                    ? const _EmptyStateWidget()
+                    ? const EmptyStateWidget()
                     : ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: controller.weatherTimelines.length,
                         itemBuilder: (context, index) {
                           return WeatherItemWidget(
-                            weatherInterval: controller.weatherTimelines[index].intervals.first,
+                            weatherInterval: controller
+                                .weatherTimelines[index].intervals.first,
                           );
                         },
                       ),
@@ -94,8 +97,8 @@ class WeatherScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   controller.isOffline.value
-                      ? 'Offline mode - Last update: '
-                      : 'Last update:',
+                      ? 'Mode hors ligne - Dernière mise à jour : ${controller.getFormattedDate(controller.lastUpdate.value.toString())} '
+                      : 'Dernière mise à jour : ${controller.getFormattedDate(controller.lastUpdate.value.toString())}',
                   style: TextStyle(
                     fontSize: 14,
                     color: controller.isOffline.value
@@ -117,7 +120,7 @@ class WeatherScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          controller.isOffline.value ? 'Offline Mode' : 'Online Mode',
+          controller.isOffline.value ? 'Mode hors ligne' : 'Mode en ligne',
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -125,13 +128,13 @@ class WeatherScreen extends StatelessWidget {
           children: [
             Text(
               controller.isOffline.value
-                  ? 'You are currently viewing cached data.'
-                  : 'Data is being fetched from the server.',
+                  ? 'Vous consultez actuellement des données mises en cache.'
+                  : 'Les données sont en cours de récupération depuis le serveur.',
             ),
             const SizedBox(height: 8),
-            Text('Last update: '),
+            Text('Dernière mise à jour : ${controller.getFormattedDate(controller.lastUpdate.value.toString())}'),
             if (controller.weatherTimelines.isNotEmpty)
-              Text('Items loaded: ${controller.weatherTimelines.length}'),
+              Text('Éléments chargés : ${controller.weatherTimelines.length}'),
           ],
         ),
         actions: [
@@ -148,135 +151,6 @@ class WeatherScreen extends StatelessWidget {
               child: const Text('Retry'),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _LoadingWidget extends StatelessWidget {
-  const _LoadingWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Loading weather data...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorWidget extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorWidget({
-    Key? key,
-    required this.message,
-    required this.onRetry,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Oops! Something went wrong',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyStateWidget extends StatelessWidget {
-  const _EmptyStateWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.cloud_queue,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No weather data available',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Pull down to refresh',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

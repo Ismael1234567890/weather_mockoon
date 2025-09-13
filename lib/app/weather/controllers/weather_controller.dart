@@ -18,7 +18,7 @@ class WeatherController extends GetxController
 
   // États observables
   RxList<Timeline> weatherTimelines = <Timeline>[].obs;
-  final RxBool isLoading = false.obs;
+  final RxBool isLoading = true.obs;
   final RxBool isRefreshing = false.obs;
   final RxString errorMessages = ''.obs;
   final RxBool hasError = false.obs;
@@ -29,6 +29,7 @@ class WeatherController extends GetxController
   void onInit() {
     super.onInit();
     getWeatherList();
+    getLastUpdateData();
     ever(apiStatus, fireState);
   }
 
@@ -37,7 +38,10 @@ class WeatherController extends GetxController
     requestBaseController(weatherResponse.getWeatherList());
   }
 
-
+  void getLastUpdateData() {
+    lastUpdate.value =
+        sl<LocalStorageServices>().getLastUpdateData ?? DateTime.now();
+  }
 
   // Méthode pour effacer les erreurs
   void clearError() {
@@ -59,11 +63,11 @@ class WeatherController extends GetxController
     try {
       final dateTime = DateTime.parse(isoTime);
       final now = DateTime.now();
-      
+
       if (dateTime.day == now.day) {
-        return 'Today';
-      } else if (dateTime.day == now.day + 1) {
-        return 'Tomorrow';
+        return 'Aujourd\'hui';
+      } else if (dateTime.day == now.day - 1) {
+        return 'Hier';
       } else {
         return '${dateTime.day}/${dateTime.month}';
       }
