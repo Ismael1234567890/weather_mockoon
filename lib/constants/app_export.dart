@@ -9,7 +9,6 @@ export '/utils/helpers/types.dart';
 export '/utils/helpers/utils.dart';
 export '/configs/routes/navigation.dart';
 export '/shared_components/customs/custom_snackbar.dart';
-export '/shared_components/customs/custom_barslider.dart';
 export '/shared_components/customs/custom_buttom.dart';
 export '/shared_components/customs/custom_checkbox.dart';
 export '/shared_components/customs/custom_dialog.dart';

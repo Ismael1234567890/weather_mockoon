@@ -1,4 +1,4 @@
-import '/app/weather/controllers/weather_binding.dart';
+import '../controllers/weather_controller.dart';
 import '/constants/app_export.dart';
 
 class WeatherBinding extends Bindings {

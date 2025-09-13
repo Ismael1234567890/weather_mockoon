@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather_app/data/models/weather_model.dart';
 import '/utils/helpers/strings.dart';
 
 /// contains all service to get data from local
@@ -17,32 +18,32 @@ class LocalStorageServices {
     _sharedPref = await SharedPreferences.getInstance();
   }
 
-  set saveToken(String? keyToken_) {
-    _sharedPref?.setString(keyToken, keyToken_!);
+  set saveWeatherData(WeatherData? keyWeather_) {
+    _sharedPref?.setString(weatherKey, weatherDataToJson(keyWeather_!));
   }
 
-  String? get getToken {
-    return (_sharedPref != null && _sharedPref!.containsKey(keyToken))
-        ? _sharedPref?.getString(keyToken)
+   set saveLastUpdateData(DateTime? lastUpdateKey_) {
+    _sharedPref?.setString(lastUpdateKey, lastUpdateKey_.toString());
+  }
+
+
+  WeatherData? get getWeatherData {
+    return (_sharedPref != null && _sharedPref!.containsKey(weatherKey))
+        ? weatherDataFromJson(_sharedPref?.getString(weatherKey) ?? "")
+        : null;
+  }
+
+  DateTime? get getLastUpdateData {
+    return (_sharedPref != null && _sharedPref!.containsKey(lastUpdateKey))
+        ? DateTime.parse(_sharedPref?.getString(lastUpdateKey) ?? "")
         : null;
   }
 
   removeToken() {
-    _sharedPref?.remove(keyToken);
+    _sharedPref?.remove(weatherKey);
   }
 
   clear() {
     _sharedPref?.clear();
-  }
-
-  set userSelectedLang(String? lang) {
-    _sharedPref?.setString(keyUserLangSelected, lang!);
-  }
-
-  String? get getUserSelectedLang {
-    return (_sharedPref != null &&
-            _sharedPref!.containsKey(keyUserLangSelected))
-        ? _sharedPref?.getString(keyUserLangSelected)
-        : null;
   }
 }

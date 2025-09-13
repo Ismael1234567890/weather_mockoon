@@ -1,11 +1,9 @@
 class MyRoutes {
-  static const initial = '/initial';
-  static const login = '/login';
+  static const weather = '/weather';
 
   static const unknownRoute = "/unknownRoute";
 }
 
 class PageTitle {
-  static var initial = 'initial';
-  static var loginPage = 'login';
+  static var weather = 'Weather Screen';
 }

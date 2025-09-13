@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
             //
             //--getx routing--------------
             getPages: AppPages.routes,
-            initialRoute: MyRoutes.initial,
+            initialRoute: MyRoutes.weather,
             navigatorObservers: const [],
             //-----------------------------------------
           );

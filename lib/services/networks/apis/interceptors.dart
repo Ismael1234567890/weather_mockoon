@@ -9,10 +9,10 @@ import '/services/networks/apis/rest_api_service.dart';
 
 InterceptorsWrapper requestInterceptor(Dio dio, Environment env) =>
     InterceptorsWrapper(onRequest: (options, handler) {
-      if (sl.get<LocalStorageServices>().getToken != null) {
-        options.headers["Authorization"] =
-            "Bearer ${sl.get<LocalStorageServices>().getToken}";
-      }
+      // if (sl.get<LocalStorageServices>().getToken != null) {
+      //   options.headers["Authorization"] =
+      //       "Bearer ${sl.get<LocalStorageServices>().getToken}";
+      // }
 
       return handler.next(options);
     });
@@ -46,7 +46,7 @@ InterceptorsWrapper errorInterceptor(Dio dio, Environment env) =>
         if ((dioError.response?.statusCode == 401)) {
           sl<LocalStorageServices>().removeToken();
           sl<LocalStorageServices>().clear();
-          Get.offAllNamed(MyRoutes.login);
+          // Get.offAllNamed(MyRoutes.login);
         }
         return handler.next(dioError);
       },

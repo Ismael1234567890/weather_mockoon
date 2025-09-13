@@ -74,7 +74,7 @@ class RestApiServices {
         break;
       default:
         _env = _Local();
-        isDebugMode = false;
+        isDebugMode = true;
     }
   }
 
