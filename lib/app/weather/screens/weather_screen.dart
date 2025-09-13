@@ -35,7 +35,8 @@ class WeatherScreen extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.weatherTimelines.isEmpty) {
+        if (controller.isLoading.value && controller.weatherTimelines.isEmpty ||
+            controller.isRefreshing.value) {
           return const LoadingWidget();
         }
 
@@ -47,7 +48,15 @@ class WeatherScreen extends StatelessWidget {
         }
 
         return RefreshIndicator(
-          onRefresh: () async {},
+          onRefresh: () async {
+            controller.refreshWeatherData();
+
+            // Attendre la fin de l'opération
+            while (
+                controller.isRefreshing.value || controller.isLoading.value) {
+              await Future.delayed(const Duration(milliseconds: 50));
+            }
+          },
           color: const Color(0xFF2196F3),
           child: Column(
             children: [
@@ -60,11 +69,22 @@ class WeatherScreen extends StatelessWidget {
                     ? const EmptyStateWidget()
                     : ListView.builder(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: controller.weatherTimelines.length,
+                        itemCount: _getTotalItemsCount(), // ← Nouveau calcul
                         itemBuilder: (context, index) {
-                          return WeatherItemWidget(
-                            weatherInterval: controller
-                                .weatherTimelines[index].intervals.first,
+                          final itemData =
+                              _getItemAtIndex(index); // ← Nouvelle méthode
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // En-tête de section si c'est le premier élément d'une timeline
+                              if (itemData['isFirstOfTimeline'])
+                                _buildTimelineHeader(itemData['timestep']),
+
+                              // Widget météo
+                              WeatherItemWidget(
+                                weatherInterval: itemData['interval'],
+                              ),
+                            ],
                           );
                         },
                       ),
@@ -73,6 +93,105 @@ class WeatherScreen extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+
+  int _getTotalItemsCount() {
+    return controller.weatherTimelines
+        .map((timeline) => timeline.intervals.length)
+        .fold(0, (sum, count) => sum + count);
+  }
+
+  // Récupérer l'élément à l'index donné en parcourant toutes les timelines
+  Map<String, dynamic> _getItemAtIndex(int globalIndex) {
+    int currentIndex = 0;
+
+    for (int timelineIndex = 0;
+        timelineIndex < controller.weatherTimelines.length;
+        timelineIndex++) {
+      final timeline = controller.weatherTimelines[timelineIndex];
+
+      for (int intervalIndex = 0;
+          intervalIndex < timeline.intervals.length;
+          intervalIndex++) {
+        if (currentIndex == globalIndex) {
+          return {
+            'interval': timeline.intervals[intervalIndex],
+            'timestep': timeline.timestep,
+            'isFirstOfTimeline': intervalIndex == 0,
+          };
+        }
+        currentIndex++;
+      }
+    }
+
+    return {
+      'interval': controller.weatherTimelines.first.intervals.first,
+      'timestep': controller.weatherTimelines.first.timestep,
+      'isFirstOfTimeline': false,
+    };
+  }
+
+  // En-tête pour chaque section de timeline
+  Widget _buildTimelineHeader(String timestep) {
+    String title;
+    String subtitle;
+    Color color;
+
+    switch (timestep) {
+      case 'current':
+        title = 'Conditions actuelles';
+        subtitle = 'Maintenant';
+        color = Colors.black;
+        break;
+      case '1h':
+        title = 'Prévisions horaires';
+        subtitle = 'Prochaines 24 heures';
+        color = Colors.blue;
+        break;
+      case '1d':
+        title = 'Prévisions journalières';
+        subtitle = 'Prochains jours';
+        color = Colors.green;
+        break;
+      default:
+        title = 'Prévisions';
+        subtitle = timestep;
+        color = Colors.grey;
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.fromBorderSide(BorderSide(
+            color: color,
+            width: 4,
+          ))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color.withValues(alpha: 0.8),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 14,
+              color: color.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -132,7 +251,8 @@ class WeatherScreen extends StatelessWidget {
                   : 'Les données sont en cours de récupération depuis le serveur.',
             ),
             const SizedBox(height: 8),
-            Text('Dernière mise à jour : ${controller.getFormattedDate(controller.lastUpdate.value.toString())}'),
+            Text(
+                'Dernière mise à jour : ${controller.getFormattedDate(controller.lastUpdate.value.toString())}'),
             if (controller.weatherTimelines.isNotEmpty)
               Text('Éléments chargés : ${controller.weatherTimelines.length}'),
           ],

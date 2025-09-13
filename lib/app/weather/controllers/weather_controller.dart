@@ -33,7 +33,7 @@ class WeatherController extends GetxController
     ever(apiStatus, fireState);
   }
 
-  void getWeatherList() {
+  void getWeatherList() async {
     weatherEvent = WeatherEvent.listWeather.obs;
     requestBaseController(weatherResponse.getWeatherList());
   }
@@ -41,6 +41,13 @@ class WeatherController extends GetxController
   void getLastUpdateData() {
     lastUpdate.value =
         sl<LocalStorageServices>().getLastUpdateData ?? DateTime.now();
+  }
+
+   void refreshWeatherData() {
+    isRefreshing.value = true;
+    clearError();
+    weatherEvent = WeatherEvent.listWeather.obs;
+    requestBaseController(weatherResponse.getWeatherList());
   }
 
   // Méthode pour effacer les erreurs
