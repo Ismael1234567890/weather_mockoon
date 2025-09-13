@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:templateproject/constants/app_constants.dart';
+import '/constants/app_constants.dart';
 
 class DioExceptions implements Exception {
   late String message;
