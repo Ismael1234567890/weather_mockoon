@@ -253,8 +253,6 @@ class WeatherScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
                 'Dernière mise à jour : ${controller.getFormattedDate(controller.lastUpdate.value.toString())}'),
-            if (controller.weatherTimelines.isNotEmpty)
-              Text('Éléments chargés : ${controller.weatherTimelines.length}'),
           ],
         ),
         actions: [
