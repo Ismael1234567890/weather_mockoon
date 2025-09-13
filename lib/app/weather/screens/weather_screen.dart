@@ -43,13 +43,13 @@ class WeatherScreen extends StatelessWidget {
         if (controller.hasError.value && controller.weatherTimelines.isEmpty) {
           return MyErrorWidget(
             message: controller.errorMessage.value,
-            onRetry: controller.getWeatherList,
+            onRetry: () => controller.getWeatherList(isRefreshing: true),
           );
         }
 
         return RefreshIndicator(
           onRefresh: () async {
-            controller.refreshWeatherData();
+            controller.getWeatherList(isRefreshing: true);
 
             // Attendre la fin de l'opération
             while (

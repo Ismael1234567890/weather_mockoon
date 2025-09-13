@@ -33,9 +33,23 @@ class WeatherController extends GetxController
     ever(apiStatus, fireState);
   }
 
-  void getWeatherList() async {
-    weatherEvent = WeatherEvent.listWeather.obs;
-    requestBaseController(weatherResponse.getWeatherList());
+  void getWeatherList({bool isRefreshing = false}) async {
+    final cachedData = sl<LocalStorageServices>().getWeatherData;
+    if (cachedData != null && !isRefreshing) {
+      try {
+        WeatherData weatherData = weatherDataFromJson(json.encode(cachedData));
+        weatherTimelines.value = weatherData.data.timelines;
+        lastUpdate.value = sl<LocalStorageServices>().getLastUpdateData;
+        isOffline.value = true;
+      } catch (cacheError) {
+        if (kDebugMode) {
+          print('Cache parsing error: $cacheError');
+        }
+      }
+    } else {
+      weatherEvent = WeatherEvent.listWeather.obs;
+      requestBaseController(weatherResponse.getWeatherList());
+    }
   }
 
   void getLastUpdateData() {
@@ -43,12 +57,6 @@ class WeatherController extends GetxController
         sl<LocalStorageServices>().getLastUpdateData ?? DateTime.now();
   }
 
-   void refreshWeatherData() {
-    isRefreshing.value = true;
-    clearError();
-    weatherEvent = WeatherEvent.listWeather.obs;
-    requestBaseController(weatherResponse.getWeatherList());
-  }
 
   // Méthode pour effacer les erreurs
   void clearError() {
@@ -118,23 +126,6 @@ class WeatherController extends GetxController
             break;
           case ApiState.failure:
             isLoading.value = false;
-            // En cas d'erreur, essaie de charger depuis le cache
-            final cachedData = sl<LocalStorageServices>().getWeatherData;
-            if (cachedData != null) {
-              try {
-                WeatherData weatherData =
-                    weatherDataFromJson(json.encode(cachedData));
-                weatherTimelines.value = weatherData.data.timelines;
-                lastUpdate.value = sl<LocalStorageServices>().getLastUpdateData;
-                isOffline.value = true;
-              } catch (cacheError) {
-                if (kDebugMode) {
-                  print('Cache parsing error: $cacheError');
-                }
-              }
-            } else {
-              // Aucune donnée disponible
-            }
             break;
         }
         break;
